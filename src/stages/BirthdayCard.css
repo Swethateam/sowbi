@@ -1,0 +1,542 @@
+
+.level-birthday {
+  position: relative;
+  width: 100%;
+  height: 100svh;
+  min-height: 0;
+  overflow: hidden;
+  isolation: isolate;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 15px;
+  box-sizing: border-box;
+  background: #08090d;
+  color: #f5f3f4;
+  font-family: "Rajdhani", sans-serif;
+}
+
+/* Background */
+.birthday-bg {
+  position: absolute;
+  inset: 0;
+  z-index: -6;
+  background:
+    radial-gradient(ellipse at 50% 45%, #381019 0%, transparent 55%),
+    linear-gradient(135deg, #08090d, #171923 50%, #08090d);
+}
+
+.birthday-red-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: -4;
+  background:
+    linear-gradient(90deg, rgba(8,9,13,.92), rgba(8,9,13,.45), rgba(8,9,13,.92)),
+    linear-gradient(0deg, rgba(8,9,13,.8), transparent 50%, rgba(8,9,13,.4));
+}
+
+/* Bike background */
+.birthday-bike-background {
+  position: absolute;
+  inset: -5%;
+  z-index: -5;
+  background-image: url("/images/bike.png");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  opacity: 0.28;
+  filter: saturate(0.8) contrast(1.2);
+  animation: birthdayBikeZoom 12s ease-in-out infinite alternate;
+}
+
+@keyframes birthdayBikeZoom {
+  from { transform: scale(1); }
+  to { transform: scale(1.12); }
+}
+
+/* Smoke */
+.birthday-smoke {
+  position: absolute;
+  width: 300px;
+  height: 300px;
+  border-radius: 50%;
+  filter: blur(90px);
+  opacity: 0.18;
+  pointer-events: none;
+  z-index: -3;
+  animation: smokeMove 9s ease-in-out infinite alternate;
+}
+
+.smoke-left {
+  left: -130px;
+  bottom: -100px;
+  background: #c8102e;
+}
+
+.smoke-right {
+  right: -130px;
+  top: -100px;
+  background: #8d1025;
+  animation-delay: 3s;
+}
+
+@keyframes smokeMove {
+  to {
+    transform: translate(60px, -40px) scale(1.3);
+    opacity: 0.32;
+  }
+}
+
+/* Lasers */
+.birthday-laser {
+  position: absolute;
+  left: -20%;
+  width: 140%;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    #c8102e,
+    #ff526c,
+    transparent
+  );
+  box-shadow: 0 0 12px #c8102e;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.laser-one {
+  top: 25%;
+  animation: laserSweep 5s ease-in-out infinite;
+}
+
+.laser-two {
+  top: 70%;
+  animation: laserSweep 6s ease-in-out infinite 2s;
+}
+
+@keyframes laserSweep {
+  0%, 100% {
+    opacity: 0;
+    transform: translateX(-25%);
+  }
+  50% {
+    opacity: 0.8;
+    transform: translateX(25%);
+  }
+}
+
+/* Sparks */
+.birthday-sparks {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: -2;
+}
+
+.birthday-spark {
+  position: absolute;
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: #ff435d;
+  box-shadow: 0 0 10px #ff173c;
+  animation: sparkTwinkle 4s ease-in-out infinite;
+}
+
+@keyframes sparkTwinkle {
+  0%, 100% {
+    opacity: 0;
+    transform: scale(0.5);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(2);
+  }
+}
+
+/* HUD */
+.birthday-hud {
+  position: absolute;
+  top: 20px;
+  left: 22px;
+  right: 22px;
+  display: flex;
+  justify-content: space-between;
+  color: #d7d9e0;
+  font-size: 10px;
+  letter-spacing: 2px;
+  opacity: 0.75;
+}
+
+.birthday-hud span {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+/* Main */
+.birthday-main-content {
+  position: relative;
+  z-index: 2;
+  width: min(100%, 650px);
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  perspective: 1200px;
+}
+
+/* Top label */
+.birthday-top-label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #e4a6ae;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 3px;
+  margin-bottom: 15px;
+  text-shadow: 0 0 12px rgba(200,16,46,.6);
+}
+
+/* Speedometer */
+.birthday-speedometer {
+  width: 105px;
+  height: 105px;
+  margin-bottom: 12px;
+  border-radius: 50%;
+  padding: 5px;
+  background: conic-gradient(
+    #c8102e 0deg,
+    #ff536b 180deg,
+    #272b35 181deg,
+    #272b35 360deg
+  );
+  box-shadow:
+    0 0 15px rgba(200,16,46,.5),
+    0 0 40px rgba(200,16,46,.2);
+}
+
+.speedometer-ring {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: radial-gradient(circle, #20232e, #08090d 75%);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.speed-label {
+  font-size: 8px;
+  letter-spacing: 3px;
+  color: #d7d9e0;
+}
+
+.speedometer-ring strong {
+  font-family: "Orbitron", sans-serif;
+  font-size: 34px;
+  color: #fff;
+  line-height: 1.1;
+  text-shadow: 0 0 15px #c8102e;
+}
+
+.speed-unit {
+  font-size: 7px;
+  letter-spacing: 2px;
+  color: #ff536b;
+}
+
+/* Birthday title */
+.birthday-heading {
+  transform-style: preserve-3d;
+}
+
+.birthday-eyebrow {
+  font-size: 10px;
+  letter-spacing: 6px;
+  color: #c8102e;
+  margin: 0 0 8px;
+}
+
+.birthday-heading h1 {
+  display: flex;
+  flex-direction: column;
+  font-family: "Orbitron", sans-serif;
+  font-size: clamp(38px, 8vw, 76px);
+  font-weight: 900;
+  line-height: .98;
+  letter-spacing: 2px;
+  margin: 0;
+  color: #d7d9e0;
+  -webkit-text-stroke: 1px rgba(255,255,255,.2);
+  text-shadow:
+    0 2px 0 #8d1025,
+    0 5px 0 #5b0c1b,
+    0 10px 15px rgba(0,0,0,.9),
+    0 0 25px rgba(200,16,46,.35);
+}
+
+.birthday-heading h1 span {
+  color: #f5f3f4;
+}
+
+.birthday-title-underline {
+  width: 120px;
+  height: 2px;
+  margin: 13px auto 0;
+  background: linear-gradient(90deg, transparent, #c8102e, transparent);
+  box-shadow: 0 0 15px #c8102e;
+}
+
+/* KUTTA */
+.birthday-name-block {
+  position: relative;
+  margin: 19px 0 10px;
+  transform-style: preserve-3d;
+}
+
+.birthday-name-glow {
+  position: absolute;
+  inset: -20px -50px;
+  background: #c8102e;
+  filter: blur(55px);
+  opacity: .2;
+  z-index: -1;
+}
+
+.birthday-kutta {
+  font-family: "Orbitron", sans-serif;
+  font-size: clamp(58px, 14vw, 105px);
+  font-weight: 900;
+  letter-spacing: 7px;
+  line-height: 1;
+  color: #d7d9e0;
+  background: linear-gradient(
+    180deg,
+    #ffffff 0%,
+    #d7d9e0 35%,
+    #8b8e98 55%,
+    #f5f3f4 70%,
+    #777b86 100%
+  );
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter:
+    drop-shadow(0 3px 0 #8d1025)
+    drop-shadow(0 7px 0 #4a0917)
+    drop-shadow(0 14px 15px rgba(0,0,0,.9))
+    drop-shadow(0 0 20px rgba(200,16,46,.45));
+  animation: kuttaGlow 2.5s ease-in-out infinite alternate;
+}
+
+@keyframes kuttaGlow {
+  to {
+    filter:
+      drop-shadow(0 3px 0 #c8102e)
+      drop-shadow(0 7px 0 #4a0917)
+      drop-shadow(0 14px 15px rgba(0,0,0,.9))
+      drop-shadow(0 0 30px rgba(200,16,46,.8));
+  }
+}
+
+.birthday-by {
+  margin-top: 10px;
+  color: #c8102e;
+  font-family: "Rajdhani", sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 7px;
+  text-shadow: 0 0 15px rgba(200,16,46,.7);
+}
+
+/* Subtitle */
+.birthday-subtitle {
+  color: #d7d9e0;
+  font-family: "Orbitron", sans-serif;
+  font-size: 10px;
+  letter-spacing: 3px;
+  margin: 15px 0 10px;
+}
+
+/* Status */
+.birthday-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 9px;
+  letter-spacing: 2px;
+  color: #a7aab4;
+  margin-bottom: 22px;
+}
+
+.status-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #c8102e;
+  box-shadow: 0 0 10px #c8102e;
+  animation: statusPulse 1s infinite alternate;
+}
+
+@keyframes statusPulse {
+  to { opacity: .3; }
+}
+
+/* Next */
+.birthday-next-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 13px;
+  min-width: 170px;
+  padding: 13px 24px;
+  border: 1px solid #c8102e;
+  border-radius: 4px;
+  background: linear-gradient(110deg, #c8102e, #690d22);
+  color: #fff;
+  font-family: "Orbitron", sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 3px;
+  cursor: pointer;
+  box-shadow:
+    0 5px 25px rgba(200,16,46,.3),
+    inset 0 1px rgba(255,255,255,.2);
+}
+
+/* Bottom HUD */
+.birthday-bottom-hud {
+  position: absolute;
+  bottom: 17px;
+  left: 20px;
+  right: 20px;
+  display: flex;
+  justify-content: space-between;
+  color: #767b87;
+  font-size: 8px;
+  letter-spacing: 2px;
+}
+
+/* Mobile */
+@media (max-width: 600px) {
+  .level-birthday {
+    padding: 8px;
+  }
+
+  .birthday-hud {
+    top: 12px;
+    left: 12px;
+    right: 12px;
+    font-size: 8px;
+  }
+
+  .birthday-main-content {
+    justify-content: center;
+  }
+
+  .birthday-top-label {
+    font-size: 8px;
+    letter-spacing: 2px;
+    margin-bottom: 10px;
+  }
+
+  .birthday-speedometer {
+    width: 83px;
+    height: 83px;
+    margin-bottom: 9px;
+  }
+
+  .speedometer-ring strong {
+    font-size: 27px;
+  }
+
+  .birthday-eyebrow {
+    font-size: 8px;
+    letter-spacing: 4px;
+  }
+
+  .birthday-heading h1 {
+    font-size: clamp(34px, 10vw, 53px);
+  }
+
+  .birthday-name-block {
+    margin: 14px 0 8px;
+  }
+
+  .birthday-kutta {
+    font-size: clamp(52px, 15vw, 76px);
+    letter-spacing: 4px;
+  }
+
+  .birthday-by {
+    font-size: 12px;
+    letter-spacing: 5px;
+  }
+
+  .birthday-subtitle {
+    font-size: 8px;
+    letter-spacing: 2px;
+    margin: 10px 0;
+  }
+
+  .birthday-status {
+    font-size: 7px;
+    letter-spacing: 1px;
+    margin-bottom: 15px;
+  }
+
+  .birthday-next-btn {
+    min-height: 39px;
+    padding: 10px 22px;
+  }
+
+  .birthday-bottom-hud {
+    bottom: 9px;
+    left: 12px;
+    right: 12px;
+    font-size: 7px;
+  }
+}
+
+/* Small-height phones */
+@media (max-width: 600px) and (max-height: 720px) {
+  .birthday-top-label {
+    margin-bottom: 5px;
+  }
+
+  .birthday-speedometer {
+    width: 68px;
+    height: 68px;
+    margin-bottom: 5px;
+  }
+
+  .speedometer-ring strong {
+    font-size: 22px;
+  }
+
+  .birthday-heading h1 {
+    font-size: 34px;
+  }
+
+  .birthday-name-block {
+    margin: 9px 0 5px;
+  }
+
+  .birthday-kutta {
+    font-size: 55px;
+  }
+
+  .birthday-subtitle {
+    margin: 6px 0;
+  }
+
+  .birthday-status {
+    margin-bottom: 9px;
+  }
+}
