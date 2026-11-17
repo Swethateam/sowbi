@@ -1,3 +1,4 @@
+
 @import url("https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Rajdhani:wght@400;500;600;700&display=swap");
 
 .mission-game {
@@ -109,7 +110,7 @@
   border-left-color: #ffb43e;
 }
 
-/* RACING TRACK */
+/* TRACK */
 
 .race-track {
   width: min(100%, 850px);
@@ -135,24 +136,19 @@
   top: 0;
   overflow: hidden;
   background: #1b1c24;
-  background-image:
-    repeating-linear-gradient(
-      180deg,
-      #20212a 0px,
-      #20212a 30px,
-      #1b1c24 30px,
-      #1b1c24 60px
-    );
+  background-image: repeating-linear-gradient(
+    180deg,
+    #20212a 0px,
+    #20212a 30px,
+    #1b1c24 30px,
+    #1b1c24 60px
+  );
   animation: roadMove 0.7s linear infinite;
 }
 
 @keyframes roadMove {
-  from {
-    background-position-y: 0;
-  }
-  to {
-    background-position-y: 60px;
-  }
+  from { background-position-y: 0; }
+  to { background-position-y: 60px; }
 }
 
 .road-line {
@@ -171,21 +167,12 @@
   animation: roadMarkMove 0.7s linear infinite;
 }
 
-.road-line-one {
-  left: 33.33%;
-}
-
-.road-line-two {
-  left: 66.66%;
-}
+.road-line-one { left: 33.33%; }
+.road-line-two { left: 66.66%; }
 
 @keyframes roadMarkMove {
-  from {
-    background-position-y: 0;
-  }
-  to {
-    background-position-y: 65px;
-  }
+  from { background-position-y: 0; }
+  to { background-position-y: 65px; }
 }
 
 .track-side {
@@ -203,15 +190,10 @@
   animation: roadMarkMove 0.7s linear infinite;
 }
 
-.track-side-left {
-  left: 0;
-}
+.track-side-left { left: 0; }
+.track-side-right { right: 0; }
 
-.track-side-right {
-  right: 0;
-}
-
-/* GIFTS AND OBSTACLES */
+/* GIFTS */
 
 .race-object {
   position: absolute;
@@ -263,7 +245,7 @@
   box-shadow: 0 0 15px rgba(255, 49, 83, 0.6);
 }
 
-/* BIKE POSITION */
+/* BIKE */
 
 .race-player {
   position: absolute;
@@ -285,12 +267,32 @@
   transform: translateX(-50%);
   pointer-events: none;
   z-index: 12;
+  overflow: visible;
 }
 
+.bike-scene-wrapper,
 .race-bike-3d canvas {
   width: 100% !important;
   height: 100% !important;
   display: block;
+}
+
+.bike-scene-wrapper {
+  position: relative;
+  overflow: visible;
+}
+
+.bike-loading {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  color: #ff4261;
+  font-family: "Orbitron", sans-serif;
+  font-size: 9px;
+  letter-spacing: 2px;
+  white-space: nowrap;
+  text-shadow: 0 0 10px #ff3153;
 }
 
 .race-bike-shadow {
@@ -397,9 +399,7 @@
   box-shadow: 0 0 25px rgba(255, 49, 83, 0.5);
 }
 
-.result-panel {
-  border-color: #a77b3e;
-}
+.result-panel { border-color: #a77b3e; }
 
 .result-trophy {
   color: #ffc15a;
@@ -413,12 +413,10 @@
 }
 
 @keyframes keyFloat {
-  to {
-    transform: translateY(-9px) rotate(10deg);
-  }
+  to { transform: translateY(-9px) rotate(10deg); }
 }
 
-/* BOTTOM HUD */
+/* BOTTOM */
 
 .race-bottom {
   width: min(100%, 850px);
@@ -429,9 +427,7 @@
   gap: 20px;
 }
 
-.gift-progress {
-  flex: 1;
-}
+.gift-progress { flex: 1; }
 
 .progress-heading {
   display: flex;
@@ -441,9 +437,7 @@
   font-size: 10px;
 }
 
-.progress-heading strong {
-  color: #ff4261;
-}
+.progress-heading strong { color: #ff4261; }
 
 .progress-track {
   width: 100%;
@@ -506,26 +500,16 @@
     min-height: 550px;
   }
 
-  .race-topbar {
-    margin-bottom: 10px;
-  }
-
-  .race-topbar h1 {
-    font-size: 21px;
-  }
+  .race-topbar { margin-bottom: 10px; }
+  .race-topbar h1 { font-size: 21px; }
 
   .race-eyebrow {
     font-size: 8px;
     letter-spacing: 1.5px;
   }
 
-  .race-top-actions {
-    gap: 7px;
-  }
-
-  .race-live {
-    font-size: 8px;
-  }
+  .race-top-actions { gap: 7px; }
+  .race-live { font-size: 8px; }
 
   .sound-toggle {
     padding: 7px;
@@ -537,22 +521,15 @@
     margin-bottom: 9px;
   }
 
-  .hud-box {
-    padding: 7px 6px;
-  }
+  .hud-box { padding: 7px 6px; }
 
   .hud-box span {
     font-size: 7px;
     letter-spacing: 1px;
   }
 
-  .hud-box strong {
-    font-size: 15px;
-  }
-
-  .hud-box small {
-    font-size: 7px;
-  }
+  .hud-box strong { font-size: 15px; }
+  .hud-box small { font-size: 7px; }
 
   .race-track {
     height: 54vh;
@@ -564,10 +541,17 @@
     left: 6%;
   }
 
+  /* Larger mobile viewport for the bike model */
   .race-bike-3d {
-    width: 180px;
-    height: 220px;
-    bottom: -5px;
+    width: 230px;
+    height: 270px;
+    bottom: -8px;
+  }
+
+  .race-bike-shadow {
+    width: 100px;
+    height: 15px;
+    bottom: -3px;
   }
 
   .race-bottom {
@@ -575,13 +559,8 @@
     gap: 10px;
   }
 
-  .progress-heading {
-    font-size: 8px;
-  }
-
-  .progress-hint {
-    font-size: 8px;
-  }
+  .progress-heading { font-size: 8px; }
+  .progress-hint { font-size: 8px; }
 
   .race-controls {
     gap: 5px;
@@ -593,10 +572,10 @@
     height: 38px;
   }
 
-  .mission-panel {
-    padding: 22px 16px;
-  }
+  .mission-panel { padding: 22px 16px; }
 }
+
+/* SHORT SCREENS */
 
 @media (max-height: 700px) {
   .mission-game {
@@ -604,13 +583,8 @@
     padding-bottom: 8px;
   }
 
-  .race-topbar {
-    margin-bottom: 6px;
-  }
-
-  .race-hud {
-    margin-bottom: 7px;
-  }
+  .race-topbar { margin-bottom: 6px; }
+  .race-hud { margin-bottom: 7px; }
 
   .race-track {
     height: 49vh;
@@ -618,10 +592,15 @@
   }
 
   .race-bike-3d {
-    height: 185px;
+    height: 230px;
   }
 
-  .race-bottom {
-    margin-top: 8px;
+  .race-bottom { margin-top: 8px; }
+}
+
+@media (max-width: 650px) and (max-height: 700px) {
+  .race-bike-3d {
+    width: 230px;
+    height: 250px;
   }
 }

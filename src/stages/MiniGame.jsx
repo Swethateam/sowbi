@@ -1,7 +1,7 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+
+import { useState, useEffect, useRef, useCallback, Suspense } from "react";
 import { Canvas } from "@react-three/fiber";
-import { useGLTF } from "@react-three/drei";
-import { Suspense } from "react";
+import { useGLTF, Center } from "@react-three/drei";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   ArrowLeft,
@@ -15,42 +15,86 @@ import "./MiniGame.css";
 
 const TOTAL_GIFTS = 10;
 const TARGET_GIFTS = 9;
+const BIKE_MODEL = "/models/sport-motorcycle.glb";
 
-function RacingBike() {
-  const { scene } = useGLTF("/models/sport-motorcycle.glb");
-
+function RacingBike({ onLoaded }) {
+  const { scene } = useGLTF(BIKE_MODEL);
   const bike = scene.clone();
 
-  return (
-    <group
-      position={[0, -0.8, 0]}
-      rotation={[0, Math.PI / 2, 0]}
-      scale={1.2}
-    >
-      <primitive object={bike} />
-    </group>
-  );
-}
-function BikeScene() {
-  return (
-    <Canvas
-      camera={{ position: [0, 1.1, 5.8], fov: 38 }}
-      dpr={[1, 1.5]}
-      gl={{ antialias: true, alpha: true }}
-    >
-      <ambientLight intensity={1.8} />
-      <directionalLight position={[3, 5, 5]} intensity={2.5} />
-      <directionalLight position={[-3, 2, -3]} intensity={1.5} />
-      <pointLight position={[0, 2, 2]} color="#ff1744" intensity={2} />
+  useEffect(() => {
+    onLoaded?.();
+  }, [onLoaded]);
 
-      <Suspense fallback={null}>
-        <RacingBike />
-      </Suspense>
-    </Canvas>
+  return (
+    <Center>
+      <group
+        rotation={[0, Math.PI / 2, 0]}
+        scale={1.2}
+      >
+        <primitive object={bike} />
+      </group>
+    </Center>
   );
 }
 
-useGLTF.preload("/models/racing-bike.glb");
+function BikeScene({ isMobile }) {
+  const [loaded, setLoaded] = useState(false);
+  const [error, setError] = useState(false);
+
+  return (
+    <div className="bike-scene-wrapper">
+      <Canvas
+        key={isMobile ? "mobile-bike" : "desktop-bike"}
+        camera={{
+          position: isMobile ? [0, 0.75, 3.5] : [0, 1.1, 5.8],
+          fov: isMobile ? 29 : 38,
+          near: 0.1,
+          far: 100,
+        }}
+        dpr={isMobile ? [1, 1.5] : [1, 2]}
+        gl={{
+          antialias: true,
+          alpha: true,
+          powerPreference: "high-performance",
+        }}
+        onCreated={({ gl }) => {
+          gl.setClearColor(0x000000, 0);
+        }}
+      >
+        <ambientLight intensity={2} />
+        <hemisphereLight
+          skyColor="#ffffff"
+          groundColor="#55505a"
+          intensity={1.5}
+        />
+        <directionalLight position={[3, 5, 5]} intensity={3} />
+        <directionalLight position={[-3, 2, -3]} intensity={2} />
+        <directionalLight
+          position={[0, 3, 4]}
+          color="#ff3153"
+          intensity={2}
+        />
+        <pointLight
+          position={[0, 2, 2]}
+          color="#ff1744"
+          intensity={1.5}
+        />
+
+        <Suspense fallback={null}>
+          <RacingBike onLoaded={() => setLoaded(true)} />
+        </Suspense>
+      </Canvas>
+
+      {!loaded && !error && (
+        <div className="bike-loading">
+          LOADING BIKE...
+        </div>
+      )}
+    </div>
+  );
+}
+
+useGLTF.preload(BIKE_MODEL);
 
 export default function MiniGame({ onNext }) {
   const [gameStatus, setGameStatus] = useState("ready");
@@ -62,12 +106,25 @@ export default function MiniGame({ onNext }) {
   const [speed, setSpeed] = useState(90);
   const [soundOn, setSoundOn] = useState(true);
 
+  const [isMobile, setIsMobile] = useState(
+    typeof window !== "undefined" && window.innerWidth <= 650
+  );
+
   const gameRef = useRef({});
   const soundRef = useRef(true);
   const engineRef = useRef(null);
   const collectRef = useRef(null);
   const crashRef = useRef(null);
   const unlockRef = useRef(null);
+
+  useEffect(() => {
+    const updateScreen = () => {
+      setIsMobile(window.innerWidth <= 650);
+    };
+
+    window.addEventListener("resize", updateScreen);
+    return () => window.removeEventListener("resize", updateScreen);
+  }, []);
 
   useEffect(() => {
     soundRef.current = soundOn;
@@ -172,8 +229,6 @@ export default function MiniGame({ onNext }) {
       game.tick += delta;
       game.distance += delta * 12;
       game.score += delta * 8;
-
-      // Gift spawning: 10 gifts total, spaced comfortably.
       game.giftTimer += delta;
 
       if (
@@ -191,7 +246,6 @@ export default function MiniGame({ onNext }) {
         });
       }
 
-      // Only a few obstacles, with plenty of time to react.
       game.obstacleTimer += delta;
 
       if (
@@ -216,8 +270,6 @@ export default function MiniGame({ onNext }) {
       game.objects.forEach((item) => {
         const nextY = item.y + delta * 31;
 
-        // Generous gift collection area:
-        // adjacent lane also counts as a light touch.
         if (
           item.type === "gift" &&
           nextY >= 70 &&
@@ -230,7 +282,6 @@ export default function MiniGame({ onNext }) {
           return;
         }
 
-        // Obstacles only cause a crash on a very close hit.
         if (
           item.type === "obstacle" &&
           nextY >= 82 &&
@@ -275,7 +326,6 @@ export default function MiniGame({ onNext }) {
         return;
       }
 
-      // Update React UI around 30 times per second.
       if (time - lastRender >= 33) {
         lastRender = time;
         setObjects([...game.objects]);
@@ -339,17 +389,14 @@ export default function MiniGame({ onNext }) {
           <span>SPEED</span>
           <strong>{speed}<small> KM/H</small></strong>
         </div>
-
         <div className="hud-box">
           <span>DISTANCE</span>
           <strong>{distance}<small> M</small></strong>
         </div>
-
         <div className="hud-box">
           <span>SCORE</span>
           <strong>{score}</strong>
         </div>
-
         <div className="hud-box gift-hud">
           <span>GIFTS</span>
           <strong>{collected}<small> / 9</small></strong>
@@ -360,7 +407,6 @@ export default function MiniGame({ onNext }) {
         <div className="track-road">
           <div className="road-line road-line-one" />
           <div className="road-line road-line-two" />
-
           <div className="track-side track-side-left" />
           <div className="track-side track-side-right" />
 
@@ -387,7 +433,7 @@ export default function MiniGame({ onNext }) {
           >
             <div className="race-bike-shadow" />
             <div className="race-bike-3d">
-              <BikeScene />
+              <BikeScene isMobile={isMobile} />
             </div>
           </div>
         </div>
@@ -406,12 +452,10 @@ export default function MiniGame({ onNext }) {
                   Collect any 9 gifts out of 10.
                   Just get close to a gift to collect it!
                 </p>
-
                 <div className="mission-rule">
                   <span>←</span> MOVE LEFT
                   <span>→</span> MOVE RIGHT
                 </div>
-
                 <button className="race-main-button" onClick={startGame}>
                   START ENGINE <Zap size={18} />
                 </button>
@@ -483,7 +527,6 @@ export default function MiniGame({ onNext }) {
             <span>GIFT COLLECTION</span>
             <strong>{collected} / 9</strong>
           </div>
-
           <div className="progress-track">
             <div
               className="progress-fill"
@@ -492,7 +535,6 @@ export default function MiniGame({ onNext }) {
               }}
             />
           </div>
-
           <span className="progress-hint">
             COLLECT 9 GIFTS TO UNLOCK YOUR FINAL GIFT
           </span>
@@ -507,9 +549,7 @@ export default function MiniGame({ onNext }) {
           >
             <ArrowLeft />
           </button>
-
           <span>STEER</span>
-
           <button
             className="control-button"
             onClick={() => moveBike(1)}

@@ -23,14 +23,15 @@ function GiftFinder({ onNext }) {
   const [photo, setPhoto] = useState(null);
   const [cameraOpen, setCameraOpen] = useState(false);
   const [cameraError, setCameraError] = useState("");
-  const [streamReady, setStreamReady] = useState(false);
+  const [cameraStream, setCameraStream] = useState(null);
+  const [cameraReady, setCameraReady] = useState(false);
 
-  const cameraInput = useRef(null);
   const galleryInput = useRef(null);
   const videoRef = useRef(null);
   const streamRef = useRef(null);
+  const photoRef = useRef(null);
 
-  // Keep the page fixed and stop mobile overscroll.
+  // Keep this page fixed while it is active.
   useEffect(() => {
     const oldOverflow = document.body.style.overflow;
     const oldOverscroll = document.body.style.overscrollBehavior;
@@ -41,31 +42,84 @@ function GiftFinder({ onNext }) {
     return () => {
       document.body.style.overflow = oldOverflow;
       document.body.style.overscrollBehavior = oldOverscroll;
-      stopCamera();
-      if (photo) URL.revokeObjectURL(photo);
+
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach((track) => track.stop());
+        streamRef.current = null;
+      }
+
+      if (photoRef.current) {
+        URL.revokeObjectURL(photoRef.current);
+        photoRef.current = null;
+      }
     };
   }, []);
+
+  // Attach the stream only after the camera modal and video element exist.
+  useEffect(() => {
+    if (!cameraOpen || !cameraStream || !videoRef.current) return;
+
+    const video = videoRef.current;
+    video.srcObject = cameraStream;
+
+    const handleReady = async () => {
+      try {
+        await video.play();
+
+        if (video.videoWidth > 0 && video.videoHeight > 0) {
+          setCameraReady(true);
+        }
+      } catch {
+        setCameraError("Unable to start video preview. Please try again.");
+      }
+    };
+
+    video.addEventListener("loadedmetadata", handleReady);
+
+    if (video.readyState >= 1) {
+      handleReady();
+    }
+
+    return () => {
+      video.removeEventListener("loadedmetadata", handleReady);
+      video.pause();
+      video.srcObject = null;
+    };
+  }, [cameraOpen, cameraStream]);
 
   const stopCamera = () => {
     if (streamRef.current) {
       streamRef.current.getTracks().forEach((track) => track.stop());
       streamRef.current = null;
     }
-    setStreamReady(false);
+
+    setCameraStream(null);
+    setCameraReady(false);
+  };
+
+  const setNewPhoto = (imageUrl) => {
+    if (photoRef.current) {
+      URL.revokeObjectURL(photoRef.current);
+    }
+
+    photoRef.current = imageUrl;
+    setPhoto(imageUrl);
   };
 
   const openCamera = async () => {
     setCameraError("");
+    setCameraReady(false);
 
     if (!navigator.mediaDevices?.getUserMedia) {
       setCameraError(
-        "Camera is not available. Open this page using localhost or HTTPS and try again."
+        "Camera is unavailable. Open this website using HTTPS or localhost."
       );
       setCameraOpen(true);
       return;
     }
 
     try {
+      // Request permission and open the camera.
       const stream = await navigator.mediaDevices.getUserMedia({
         video: {
           facingMode: { ideal: "environment" },
@@ -76,26 +130,19 @@ function GiftFinder({ onNext }) {
       });
 
       streamRef.current = stream;
+      setCameraStream(stream);
       setCameraOpen(true);
-
-      // Wait for the camera dialog to render before attaching the stream.
-      requestAnimationFrame(() => {
-        if (videoRef.current) {
-          videoRef.current.srcObject = stream;
-          videoRef.current.play().catch(() => {});
-        }
-      });
-
-      setStreamReady(true);
     } catch (error) {
       let message = "Unable to open camera. Please check camera permission.";
 
-      if (error.name === "NotAllowedError") {
-        message = "Camera permission denied. Allow camera access in your browser settings.";
-      } else if (error.name === "NotFoundError") {
+      if (error.name === "NotAllowedError" || error.name === "PermissionDeniedError") {
+        message = "Camera permission denied. Allow camera access in browser settings.";
+      } else if (error.name === "NotFoundError" || error.name === "DevicesNotFoundError") {
         message = "No camera was found on this device.";
-      } else if (error.name === "NotReadableError") {
+      } else if (error.name === "NotReadableError" || error.name === "TrackStartError") {
         message = "Camera is being used by another application. Close it and try again.";
+      } else if (error.name === "SecurityError") {
+        message = "Camera requires a secure HTTPS connection or localhost.";
       }
 
       setCameraError(message);
@@ -105,29 +152,43 @@ function GiftFinder({ onNext }) {
 
   const capturePhoto = () => {
     const video = videoRef.current;
-    if (!video || !video.videoWidth) return;
+
+    if (!video || !video.videoWidth || !video.videoHeight) {
+      setCameraError("Camera is not ready yet. Please wait a moment.");
+      return;
+    }
 
     const canvas = document.createElement("canvas");
     canvas.width = video.videoWidth;
     canvas.height = video.videoHeight;
 
     const context = canvas.getContext("2d");
+
+    if (!context) {
+      setCameraError("Unable to capture photo. Please try again.");
+      return;
+    }
+
     context.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-    canvas.toBlob((blob) => {
-      if (!blob) return;
+    canvas.toBlob(
+      (blob) => {
+        if (!blob) {
+          setCameraError("Photo capture failed. Please try again.");
+          return;
+        }
 
-      const imageUrl = URL.createObjectURL(blob);
+        const imageUrl = URL.createObjectURL(blob);
 
-      setPhoto((previous) => {
-        if (previous) URL.revokeObjectURL(previous);
-        return imageUrl;
-      });
-
-      stopCamera();
-      setCameraOpen(false);
-      setStep("preview");
-    }, "image/jpeg", 0.9);
+        setNewPhoto(imageUrl);
+        stopCamera();
+        setCameraOpen(false);
+        setCameraError("");
+        setStep("preview");
+      },
+      "image/jpeg",
+      0.92
+    );
   };
 
   const closeCamera = () => {
@@ -146,22 +207,22 @@ function GiftFinder({ onNext }) {
       return;
     }
 
-    const imageUrl = URL.createObjectURL(file);
-
-    setPhoto((previous) => {
-      if (previous) URL.revokeObjectURL(previous);
-      return imageUrl;
-    });
-
+    setNewPhoto(URL.createObjectURL(file));
     setStep("preview");
   };
 
   const removePhoto = () => {
-    if (photo) URL.revokeObjectURL(photo);
+    if (photoRef.current) {
+      URL.revokeObjectURL(photoRef.current);
+      photoRef.current = null;
+    }
+
     setPhoto(null);
     setStep("upload");
 
-    if (galleryInput.current) galleryInput.current.value = "";
+    if (galleryInput.current) {
+      galleryInput.current.value = "";
+    }
   };
 
   const collectGift = () => {
@@ -175,13 +236,18 @@ function GiftFinder({ onNext }) {
       return;
     }
 
-    if (photo) URL.revokeObjectURL(photo);
+    if (photoRef.current) {
+      URL.revokeObjectURL(photoRef.current);
+      photoRef.current = null;
+    }
 
     setPhoto(null);
     setGiftNumber((number) => number + 1);
     setStep("find");
 
-    if (galleryInput.current) galleryInput.current.value = "";
+    if (galleryInput.current) {
+      galleryInput.current.value = "";
+    }
   };
 
   const progress = (giftNumber / TOTAL_GIFTS) * 100;
@@ -209,7 +275,11 @@ function GiftFinder({ onNext }) {
         <div
           className="mission-progress-fill"
           style={{
-            width: `${step === "success" ? progress : ((giftNumber - 1) / TOTAL_GIFTS) * 100}%`,
+            width: `${
+              step === "success"
+                ? progress
+                : ((giftNumber - 1) / TOTAL_GIFTS) * 100
+            }%`,
           }}
         />
       </div>
@@ -287,6 +357,7 @@ function GiftFinder({ onNext }) {
 
             <div className="upload-actions">
               <button
+                type="button"
                 className="mission-primary-button"
                 onClick={openCamera}
               >
@@ -294,6 +365,7 @@ function GiftFinder({ onNext }) {
               </button>
 
               <button
+                type="button"
                 className="mission-secondary-button"
                 onClick={() => galleryInput.current?.click()}
               >
@@ -345,6 +417,7 @@ function GiftFinder({ onNext }) {
 
             <div className="preview-actions">
               <button
+                type="button"
                 className="mission-secondary-button"
                 onClick={removePhoto}
               >
@@ -352,6 +425,7 @@ function GiftFinder({ onNext }) {
               </button>
 
               <button
+                type="button"
                 className="mission-primary-button"
                 onClick={collectGift}
               >
@@ -405,6 +479,7 @@ function GiftFinder({ onNext }) {
             </div>
 
             <button
+              type="button"
               className="mission-primary-button"
               onClick={nextMission}
             >
@@ -422,7 +497,7 @@ function GiftFinder({ onNext }) {
         <span>14 GIFTS. ONE BIG SURPRISE.</span>
       </footer>
 
-      {/* LIVE CAMERA MODAL */}
+      {/* CAMERA MODAL */}
       <AnimatePresence>
         {cameraOpen && (
           <motion.div
@@ -433,8 +508,15 @@ function GiftFinder({ onNext }) {
           >
             <div className="camera-modal-card">
               <div className="camera-modal-header">
-                <span><Camera size={18} /> LIVE CAMERA</span>
-                <button onClick={closeCamera} aria-label="Close camera">
+                <span>
+                  <Camera size={18} /> LIVE CAMERA
+                </span>
+
+                <button
+                  type="button"
+                  onClick={closeCamera}
+                  aria-label="Close camera"
+                >
                   <X size={22} />
                 </button>
               </div>
@@ -443,7 +525,9 @@ function GiftFinder({ onNext }) {
                 <div className="camera-error">
                   <Camera size={38} />
                   <p>{cameraError}</p>
+
                   <button
+                    type="button"
                     className="mission-secondary-button"
                     onClick={() => {
                       closeCamera();
@@ -462,11 +546,14 @@ function GiftFinder({ onNext }) {
                       playsInline
                       muted
                     />
-                    {!streamReady && (
+
+                    {!cameraReady && (
                       <div className="camera-loading">
-                        Starting camera...
+                        <div className="camera-spinner" />
+                        <span>STARTING CAMERA...</span>
                       </div>
                     )}
+
                     <div className="camera-corner camera-corner-tl" />
                     <div className="camera-corner camera-corner-tr" />
                     <div className="camera-corner camera-corner-bl" />
@@ -474,13 +561,18 @@ function GiftFinder({ onNext }) {
                   </div>
 
                   <button
+                    type="button"
                     className="camera-capture-button"
                     onClick={capturePhoto}
-                    disabled={!streamReady}
+                    disabled={!cameraReady}
                   >
-                    <span />
-                    TAKE PHOTO
+                    <span className="camera-shutter-icon" />
+                    {cameraReady ? "TAKE PHOTO" : "STARTING CAMERA..."}
                   </button>
+
+                  <p className="camera-help-text">
+                    Position your gift inside the frame and capture
+                  </p>
                 </>
               )}
             </div>
