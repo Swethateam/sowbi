@@ -9,7 +9,7 @@ function Password({ onSuccess }) {
   const [showPassword, setShowPassword] = useState(false);
   const [status, setStatus] = useState("idle");
 
-  const correctPassword = "LOVE21";
+  const correctPassword = "kutta";
 
   const handleUnlock = (e) => {
     e.preventDefault();
