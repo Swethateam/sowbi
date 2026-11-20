@@ -1,5 +1,6 @@
 
-import { useState } from "react";
+import { useState, useRef } from "react";
+
 import Opening from "./stages/Opening";
 import Password from "./stages/Password";
 import VideoMessage from "./stages/VideoMessage";
@@ -12,11 +13,43 @@ import FinalMessage from "./stages/FinalMessage";
 function App() {
   const [currentPage, setCurrentPage] = useState("opening");
 
+  // Background music reference
+  const audioRef = useRef(null);
+
+  // Opening button click - Start music
+  const startMusic = async () => {
+    try {
+      await audioRef.current.play();
+    } catch (error) {
+      console.log("Music playback failed:", error);
+    }
+  };
+
+  // Video start - Pause background music
+  const pauseMusic = () => {
+    audioRef.current?.pause();
+  };
+
+  // Video end - Resume background music
+  const resumeMusic = () => {
+    audioRef.current?.play().catch(console.error);
+  };
+
   return (
     <>
+      {/* Background Music */}
+      <audio
+        ref={audioRef}
+        src="/audio/21 minutos de músicas para aumentar sua Aura 🔥.mp3"
+        loop
+      />
+
       {currentPage === "opening" && (
         <Opening
-          onUnlock={() => setCurrentPage("password")}
+          onUnlock={() => {
+            startMusic();
+            setCurrentPage("password");
+          }}
         />
       )}
 
@@ -25,30 +58,34 @@ function App() {
           onSuccess={() => setCurrentPage("video")}
         />
       )}
+
       {currentPage === "video" && (
-  <VideoMessage
-    onNext={() => setCurrentPage("birthday")}
-  />
-)}
-{currentPage === "birthday" && (
-  <BirthdayCard
-    onNext={() => setCurrentPage("gallery")}
-  />
-)}
+        <VideoMessage
+          onNext={() => setCurrentPage("birthday")}
+          onVideoStart={pauseMusic}
+          onVideoEnd={resumeMusic}
+        />
+      )}
 
-{currentPage === "gallery" && (
-  <Gallery onNext={() => setCurrentPage("game")} />
-)}
+      {currentPage === "birthday" && (
+        <BirthdayCard
+          onNext={() => setCurrentPage("gallery")}
+        />
+      )}
 
-{currentPage === "game" && (
-  <MiniGame onNext={() => setCurrentPage("gift")} />
-)}
+      {currentPage === "gallery" && (
+        <Gallery onNext={() => setCurrentPage("game")} />
+      )}
 
-{currentPage === "gift" && (
-  <GiftFinder onNext={() => setCurrentPage("final")} />
-)}
+      {currentPage === "game" && (
+        <MiniGame onNext={() => setCurrentPage("gift")} />
+      )}
 
-{currentPage === "final" && <FinalMessage />}
+      {currentPage === "gift" && (
+        <GiftFinder onNext={() => setCurrentPage("final")} />
+      )}
+
+      {currentPage === "final" && <FinalMessage />}
     </>
   );
 }

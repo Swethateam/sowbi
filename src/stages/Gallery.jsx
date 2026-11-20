@@ -12,15 +12,15 @@ import "../styles/global.css";
 import "./Gallery.css";
 
 const photos = [
-  { id: 1, src: "/images/1st.jpeg" },
-  { id: 2, src: "/images/2nd.jpeg" },
-  { id: 3, src: "/images/3rd.jpeg" },
-  { id: 4, src: "/images/4th.jpeg" },
-  { id: 5, src: "/images/5th.jpeg" },
-  { id: 6, src: "/images/1st.jpeg" },
-  { id: 7, src: "/images/3rd.jpeg" },
-  { id: 8, src: "/images/3rd.jpeg" },
-  { id: 9, src: "/images/2nd.jpeg" },
+  { id: 1, src: "/images/5th.jpeg" },
+  { id: 2, src: "/images/3rd.jpeg" },
+  { id: 3, src: "/images/4th.jpeg" },
+  { id: 4, src: "/images/6th.jpeg" },
+  { id: 5, src: "/images/7th.jpeg" },
+  { id: 6, src: "/images/8th.jpeg" },
+  { id: 7, src: "/images/9th.jpeg" },
+  { id: 8, src: "/images/10th.jpeg" },
+  { id: 9, src: "/images/finalimage.jpeg" },
 ];
 
 const ANGLE = 360 / photos.length;

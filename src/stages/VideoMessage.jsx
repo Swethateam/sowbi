@@ -20,7 +20,7 @@ const butterflies = Array.from({ length: 7 }, (_, i) => ({
   duration: `${8 + (i % 3) * 2}s`,
 }));
 
-function VideoMessage({ onNext }) {
+function VideoMessage({ onNext, onVideoStart, onVideoEnd }) {
   const [videoStarted, setVideoStarted] = useState(false);
 
   return (
@@ -118,12 +118,18 @@ function VideoMessage({ onNext }) {
             <div className="video-screen">
               <video
                 className="sister-video"
-                src="/videos/sister-message.mp4"
+                src="/videos/💎 Gitanjali Thanga Maligai.mp4"
                 controls
                 playsInline
                 preload="metadata"
-                onPlay={() => setVideoStarted(true)}
-                onEnded={() => setVideoStarted(false)}
+                onPlay={() => {
+                  setVideoStarted(true);
+                  onVideoStart?.();
+                }}
+                onEnded={() => {
+                  setVideoStarted(false);
+                  onVideoEnd?.();
+                }}
               />
 
               {!videoStarted && (
