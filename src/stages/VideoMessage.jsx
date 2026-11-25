@@ -118,7 +118,7 @@ function VideoMessage({ onNext, onVideoStart, onVideoEnd }) {
             <div className="video-screen">
               <video
                 className="sister-video"
-                src="/videos/💎 Gitanjali Thanga Maligai.mp4"
+                src="/videos/video.mp4"
                 controls
                 playsInline
                 preload="metadata"
